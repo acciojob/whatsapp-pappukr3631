@@ -27,7 +27,11 @@ public class WhatsappController {
         //If the mobile number exists in database, throw "User already exists" exception
         //Otherwise, create the user and return "SUCCESS"
 
-        return whatsappService.createUser(name, mobile);
+        String response = whatsappService.createUser(name, mobile);
+        if (response.equals("User already exists")){
+            throw new Exception(response);
+        }
+        return response;
     }
 
     @PostMapping("/add-group")
@@ -58,7 +62,13 @@ public class WhatsappController {
         //Throw "You are not allowed to send message" if the sender is not a member of the group
         //If the message is sent successfully, return the final number of messages in that group.
 
-        return whatsappService.sendMessage(message, sender, group);
+        int response = whatsappService.sendMessage(message, sender, group);
+        if(response == -1){
+            throw new Exception("Group does not exist");
+        }
+        if(response == -2)
+            throw new Exception("You are not allowed to send message");
+        return response;
     }
     @PutMapping("/change-admin")
     public String changeAdmin(User approver, User user, Group group) throws Exception{
@@ -66,8 +76,20 @@ public class WhatsappController {
         //Throw "Approver does not have rights" if the approver is not the current admin of the group
         //Throw "User is not a participant" if the user is not a part of the group
         //Change the admin of the group to "user" and return "SUCCESS". Note that at one time there is only one admin and the admin rights are transferred from approver to user.
-
-        return whatsappService.changeAdmin(approver, user, group);
+        String response = whatsappService.changeAdmin(approver, user, group);
+        if(response.equals("NG"))
+        {
+            throw new Exception("Group does not exist");
+        }
+        if(response.equals("NA"))
+        {
+            throw new Exception("Approver does not have rights");
+        }
+        if(response.equals("NU"))
+        {
+            throw new Exception("User is not a participant");
+        }
+        return response;
     }
 
     @DeleteMapping("/remove-user")
